@@ -13,6 +13,7 @@ import { ChartWrapper } from '../ui/ChartWrapper';
 import { useRevenueTimeline } from '../../hooks/useApiQueries';
 import { useFilters } from '../../providers/FilterProvider';
 import { RevenueTimeline } from '../../types/api';
+import { formatCurrency } from '../../lib/utils';
 
 interface RevenueTimelineChartProps {
   className?: string;
@@ -36,10 +37,7 @@ const CustomTooltip = ({
       <p className="font-medium text-gray-900">{date}</p>
       <p className="text-sm text-gray-600">
         Revenue: <span className="font-medium" style={{ color: '#459B63' }}>
-          ${revenue.toLocaleString('en-US', { 
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: 2 
-          })}
+          ${formatCurrency(revenue)}
         </span>
       </p>
     </div>
@@ -167,10 +165,7 @@ export const RevenueTimelineChart: React.FC<RevenueTimelineChartProps> = ({
                     <tr key={index}>
                       <td>{format(parseISO(item.date), 'MMMM dd, yyyy')}</td>
                       <td>
-                        ${item.revenue.toLocaleString('en-US', { 
-                          minimumFractionDigits: 2, 
-                          maximumFractionDigits: 2 
-                        })}
+                        ${formatCurrency(item.revenue)}
                       </td>
                     </tr>
                   ))}

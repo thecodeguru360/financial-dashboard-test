@@ -13,6 +13,7 @@ import { ChartWrapper } from '../ui/ChartWrapper';
 import { useRevenueByProperty } from '../../hooks/useApiQueries';
 import { useFilters } from '../../providers/FilterProvider';
 import { PropertyRevenue } from '../../types/api';
+import { formatCurrency } from '../../lib/utils';
 
 interface RevenueByPropertyChartProps {
   className?: string;
@@ -37,10 +38,7 @@ const CustomTooltip = ({
       <p className="font-medium text-gray-900">{label}</p>
       <p className="text-sm text-gray-600">
         Total Revenue: <span className="font-medium" style={{ color: '#459B63' }}>
-          ${revenue.toLocaleString('en-US', { 
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: 2 
-          })}
+          ${formatCurrency(revenue)}
         </span>
       </p>
     </div>
@@ -198,10 +196,7 @@ export const RevenueByPropertyChart: React.FC<RevenueByPropertyChartProps> = ({
                   <tr key={index}>
                     <td>{item.property_name}</td>
                     <td>
-                      ${item.revenue.toLocaleString('en-US', { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                      })}
+                      ${formatCurrency(item.revenue)}
                     </td>
                   </tr>
                 ))}

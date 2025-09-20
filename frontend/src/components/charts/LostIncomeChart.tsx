@@ -13,6 +13,7 @@ import { ChartWrapper } from '../ui/ChartWrapper';
 import { useMaintenanceLostIncome } from '../../hooks/useApiQueries';
 import { useFilters } from '../../providers/FilterProvider';
 import { LostIncomeData } from '../../types/api';
+import { formatCurrency, formatNumber } from '../../lib/utils';
 
 interface LostIncomeChartProps {
   className?: string;
@@ -30,8 +31,8 @@ const CustomTooltip = ({
     return null;
   }
 
-  const lostIncome = payload[0]?.payload?.lost_income || 0;
-  const blockedDays = payload[0]?.payload?.blocked_days || 0;
+  const lostIncome = payload[0]?.payload?.lost_income;
+  const blockedDays = payload[0]?.payload?.blocked_days;
 
   return (
     <div className="bg-white border border-[#F1F1F1] rounded-xl p-3 shadow-lg">
@@ -39,19 +40,16 @@ const CustomTooltip = ({
       <div className="space-y-1 text-sm">
         <p className="text-gray-600">
           Lost Income: <span className="font-medium" style={{ color: '#DC2626' }}>
-            ${lostIncome.toLocaleString('en-US', { 
-              minimumFractionDigits: 2, 
-              maximumFractionDigits: 2 
-            })}
+            ${formatCurrency(lostIncome)}
           </span>
         </p>
         <p className="text-gray-600">
           Blocked Days: <span className="font-medium" style={{ color: '#EA580C' }}>
-            {blockedDays} {blockedDays === 1 ? 'day' : 'days'}
+            {formatNumber(blockedDays)} {blockedDays === 1 ? 'day' : 'days'}
           </span>
         </p>
         <p className="text-xs text-gray-600">
-          Avg Daily Loss: ${blockedDays > 0 ? (lostIncome / blockedDays).toFixed(2) : '0.00'}
+          Avg Daily Loss: ${formatCurrency(blockedDays > 0 ? (lostIncome || 0) / (blockedDays || 1) : 0)}
         </p>
       </div>
     </div>
@@ -164,10 +162,7 @@ export const LostIncomeChart: React.FC<LostIncomeChartProps> = ({
               <div className="mb-4 text-center">
                 <p className="text-sm text-muted-foreground">
                   Total Lost Income: <span className="font-semibold text-destructive">
-                    ${totalLostIncome.toLocaleString('en-US', { 
-                      minimumFractionDigits: 2, 
-                      maximumFractionDigits: 2 
-                    })}
+                    ${formatCurrency(totalLostIncome)}
                   </span>
                 </p>
               </div>
@@ -247,14 +242,11 @@ export const LostIncomeChart: React.FC<LostIncomeChartProps> = ({
                   <tr key={index}>
                     <td>{item.property_name}</td>
                     <td>
-                      ${item.lost_income.toLocaleString('en-US', { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                      })}
+                      ${formatCurrency(item.lost_income)}
                     </td>
                     <td>{item.blocked_days} {item.blocked_days === 1 ? 'day' : 'days'}</td>
                     <td>
-                      ${item.blocked_days > 0 ? (item.lost_income / item.blocked_days).toFixed(2) : '0.00'}
+                      ${formatCurrency(item.blocked_days > 0 ? (item.lost_income || 0) / (item.blocked_days || 1) : 0)}
                     </td>
                   </tr>
                 ))}

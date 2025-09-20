@@ -15,6 +15,7 @@ import { ChartWrapper } from '../ui/ChartWrapper';
 import { useReviewTrends } from '../../hooks/useApiQueries';
 import { useFilters } from '../../providers/FilterProvider';
 import { ReviewTrendsData } from '../../types/api';
+import { formatNumber } from '../../lib/utils';
 
 interface ReviewTrendsChartProps {
   className?: string;
@@ -146,7 +147,7 @@ export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({
                   <div className="flex justify-center gap-6 text-sm text-muted-foreground">
                     <span>
                       Total Reviews: <span className="font-semibold text-secondary">
-                        {summaryStats.totalReviews.toLocaleString()}
+                        {formatNumber(summaryStats.totalReviews)}
                       </span>
                     </span>
                     <span>

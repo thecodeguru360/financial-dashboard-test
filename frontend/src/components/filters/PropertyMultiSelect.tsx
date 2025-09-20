@@ -19,8 +19,8 @@ interface PropertyMultiSelectProps {
 }
 
 export const PropertyMultiSelect: React.FC<PropertyMultiSelectProps> = ({
-  properties,
-  selectedIds,
+  properties = [], // Default to empty array
+  selectedIds = [], // Default to empty array
   onChange,
   placeholder = "Select properties...",
   className,
@@ -31,6 +31,7 @@ export const PropertyMultiSelect: React.FC<PropertyMultiSelectProps> = ({
 
   // Filter properties based on search term
   const filteredProperties = useMemo(() => {
+    if (!Array.isArray(properties)) return [];
     if (!searchTerm) return properties;
     return properties.filter(property =>
       property.property_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -57,6 +58,7 @@ export const PropertyMultiSelect: React.FC<PropertyMultiSelectProps> = ({
 
   // Handle select all / deselect all
   const handleSelectAll = () => {
+    if (!Array.isArray(properties)) return;
     if (selectedIds.length === properties.length) {
       onChange([]);
     } else {
@@ -70,8 +72,8 @@ export const PropertyMultiSelect: React.FC<PropertyMultiSelectProps> = ({
     onChange([]);
   };
 
-  const isAllSelected = selectedIds.length === properties.length && properties.length > 0;
-  const isPartiallySelected = selectedIds.length > 0 && selectedIds.length < properties.length;
+  const isAllSelected = Array.isArray(properties) && selectedIds.length === properties.length && properties.length > 0;
+  const isPartiallySelected = Array.isArray(properties) && selectedIds.length > 0 && selectedIds.length < properties.length;
 
   return (
     <div className={cn("grid gap-2", className)}>

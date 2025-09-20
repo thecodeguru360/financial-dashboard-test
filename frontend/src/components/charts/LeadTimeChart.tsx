@@ -13,6 +13,7 @@ import { ChartWrapper } from '../ui/ChartWrapper';
 import { useLeadTimes } from '../../hooks/useApiQueries';
 import { useFilters } from '../../providers/FilterProvider';
 import { LeadTimeData } from '../../types/api';
+import { formatNumber } from '../../lib/utils';
 
 interface LeadTimeChartProps {
   className?: string;
@@ -46,7 +47,8 @@ const CustomTooltip = ({
 };
 
 // Format data for the histogram chart
-const formatChartData = (data: LeadTimeData) => {
+const formatChartData = (data: LeadTimeData | undefined) => {
+  if (!data || !Array.isArray(data.data)) return [];
   return data.data.map(item => ({
     lead_time_days: item.lead_time_days,
     count: item.count,
@@ -76,14 +78,16 @@ const formatCountTick = (value: number) => {
 };
 
 // Statistics table component
-const LeadTimeStatsTable: React.FC<{ stats: LeadTimeData['stats'] }> = ({ stats }) => {
+const LeadTimeStatsTable: React.FC<{ stats: LeadTimeData['stats'] | undefined }> = ({ stats }) => {
+  if (!stats) return null;
+  
   return (
     <div className="mb-4">
       <h4 className="text-sm font-medium text-foreground mb-2">Lead Time Statistics</h4>
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div className="bg-muted/50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-primary">
-            {stats.median_days.toFixed(0)}
+            {formatNumber(stats.median_days)}
           </div>
           <div className="text-muted-foreground">
             Median Days
@@ -91,7 +95,7 @@ const LeadTimeStatsTable: React.FC<{ stats: LeadTimeData['stats'] }> = ({ stats 
         </div>
         <div className="bg-muted/50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-secondary">
-            {stats.p90_days.toFixed(0)}
+            {formatNumber(stats.p90_days)}
           </div>
           <div className="text-muted-foreground">
             90th Percentile
@@ -109,7 +113,6 @@ export const LeadTimeChart: React.FC<LeadTimeChartProps> = ({
   const query = useLeadTimes(filters);
 
   const chartData = useMemo(() => {
-    if (!query.data) return [];
     return formatChartData(query.data);
   }, [query.data]);
 
@@ -148,7 +151,7 @@ export const LeadTimeChart: React.FC<LeadTimeChartProps> = ({
           {hasData && query.data ? (
             <>
               {/* Statistics Table */}
-              <LeadTimeStatsTable stats={query.data.stats} />
+              <LeadTimeStatsTable stats={query.data?.stats} />
               
               {/* Summary Stats */}
               {summaryStats && (
@@ -156,7 +159,7 @@ export const LeadTimeChart: React.FC<LeadTimeChartProps> = ({
                   <div className="flex justify-center gap-6 text-sm text-muted-foreground">
                     <span>
                       Total Bookings: <span className="font-semibold text-primary">
-                        {summaryStats.totalBookings.toLocaleString()}
+                        {formatNumber(summaryStats.totalBookings)}
                       </span>
                     </span>
                     <span>
