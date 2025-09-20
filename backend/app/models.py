@@ -101,6 +101,40 @@ class PropertiesResponse(BaseModel):
     data: List[Property]
     total_count: int = Field(ge=0, description="Total number of properties")
 
+# KPI Response Models
+
+class KPIData(BaseModel):
+    """Individual KPI data point"""
+    name: str = Field(description="KPI name")
+    value: float = Field(description="KPI value")
+    unit: str = Field(description="Unit of measurement (e.g., 'USD', 'count', 'days')")
+    description: str = Field(description="Human-readable description")
+
+class KPIResponse(BaseModel):
+    """Response model for KPI dashboard endpoint"""
+    data: List[KPIData]
+    date_range: Dict[str, str] = Field(description="Date range for the KPIs")
+    property_filter: Optional[List[int]] = Field(None, description="Property IDs used for filtering")
+
+class TotalRevenueResponse(BaseModel):
+    """Response model for total revenue KPI"""
+    total_revenue: float = Field(ge=0, description="Total revenue in the date range")
+    date_range: Dict[str, str] = Field(description="Date range used for calculation")
+    property_count: int = Field(ge=0, description="Number of properties included")
+
+class StaysCountResponse(BaseModel):
+    """Response model for number of stays KPI"""
+    total_stays: int = Field(ge=0, description="Total number of reservations/stays")
+    date_range: Dict[str, str] = Field(description="Date range used for calculation")
+    property_count: int = Field(ge=0, description="Number of properties included")
+
+class AverageNightlyRevenueResponse(BaseModel):
+    """Response model for average nightly revenue KPI"""
+    average_nightly_revenue: float = Field(ge=0, description="Average revenue per night")
+    total_nights: int = Field(ge=0, description="Total nights used in calculation")
+    total_revenue: float = Field(ge=0, description="Total revenue used in calculation")
+    date_range: Dict[str, str] = Field(description="Date range used for calculation")
+
 # Error Response Models
 
 class ErrorDetail(BaseModel):

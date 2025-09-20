@@ -9,7 +9,8 @@ from .models import (
     PropertiesResponse, ErrorResponse, ValidationErrorResponse,
     PropertyRevenue, Property, LostIncomeResponse,
     LostIncomeData, ReviewTrendsResponse, ReviewTrend, LeadTimeResponse,
-    LeadTimeStats
+    LeadTimeStats, KPIResponse, KPIData, TotalRevenueResponse,
+    StaysCountResponse, AverageNightlyRevenueResponse
 )
 from .services.data_loader import load_and_validate_data, DataLoadingError, DataValidationError
 from .services.revenue_calculator import (
@@ -435,4 +436,316 @@ async def get_booking_lead_times(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error getting booking lead times: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.get("/api/kpis", response_model=KPIResponse)
+async def get_kpis(
+    start_date: Optional[str] = Query(None, description="Start date in YYYY-MM-DD format"),
+    end_date: Optional[str] = Query(None, description="End date in YYYY-MM-DD format"),
+    property_ids: Optional[str] = Query(None, description="Comma-separated property IDs"),
+    data=Depends(get_data)
+):
+    """
+    Get all KPIs in a single response: total revenue, number of stays, 
+    average nightly revenue, and lost income due to maintenance.
+    """
+    try:
+        # Parse property IDs if provided
+        property_id_list = None
+        if property_ids:
+            try:
+                property_id_list = [int(pid.strip()) for pid in property_ids.split(",")]
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid property_ids format")
+        
+        # Validate dates
+        if start_date:
+            try:
+                datetime.strptime(start_date, '%Y-%m-%d')
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+        
+        if end_date:
+            try:
+                datetime.strptime(end_date, '%Y-%m-%d')
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+        
+        # Filter reservations by property if specified
+        reservations = data.reservations
+        maintenance_blocks = data.maintenance_blocks
+        if property_id_list:
+            reservations = [r for r in reservations if r.property_id in property_id_list]
+            maintenance_blocks = [m for m in maintenance_blocks if m.property_id in property_id_list]
+        
+        # Apply date filters to reservations (filter by check-in date)
+        filtered_reservations = []
+        for r in reservations:
+            if start_date and r.check_in < start_date:
+                continue
+            if end_date and r.check_in > end_date:
+                continue
+            filtered_reservations.append(r)
+        
+        # Calculate KPIs
+        kpis = []
+        
+        # 1. Total Revenue
+        total_revenue = sum(r.reservation_revenue for r in filtered_reservations)
+        kpis.append(KPIData(
+            name="total_revenue",
+            value=total_revenue,
+            unit="USD",
+            description="Total revenue from reservations in the selected period"
+        ))
+        
+        # 2. Number of Stays
+        total_stays = len(filtered_reservations)
+        kpis.append(KPIData(
+            name="number_of_stays",
+            value=float(total_stays),
+            unit="count",
+            description="Total number of reservations/stays in the selected period"
+        ))
+        
+        # 3. Average Nightly Revenue (using prorated method)
+        from .services.revenue_calculator import calculate_reservation_metrics
+        metrics = calculate_reservation_metrics(filtered_reservations)
+        avg_nightly_revenue = metrics['average_nightly_rate']
+        kpis.append(KPIData(
+            name="average_nightly_revenue",
+            value=avg_nightly_revenue,
+            unit="USD",
+            description="Average revenue per night using prorated calculation method"
+        ))
+        
+        # 4. Lost Income Due to Maintenance
+        try:
+            from .services.maintenance_calculator import create_lost_income_summary
+            lost_income_summary = create_lost_income_summary(
+                data.reservations, maintenance_blocks, start_date, end_date
+            )
+            total_lost_income = sum(item['lost_income'] for item in lost_income_summary)
+        except Exception as e:
+            logger.warning(f"Could not calculate lost income: {e}")
+            total_lost_income = 0.0
+        
+        kpis.append(KPIData(
+            name="lost_income_maintenance",
+            value=total_lost_income,
+            unit="USD",
+            description="Estimated lost income due to maintenance blocks in the selected period"
+        ))
+        
+        # Determine actual date range
+        actual_start = start_date or "N/A"
+        actual_end = end_date or "N/A"
+        
+        return KPIResponse(
+            data=kpis,
+            date_range={
+                "start_date": actual_start,
+                "end_date": actual_end
+            },
+            property_filter=property_id_list
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting KPIs: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.get("/api/kpis/total-revenue", response_model=TotalRevenueResponse)
+async def get_total_revenue_kpi(
+    start_date: Optional[str] = Query(None, description="Start date in YYYY-MM-DD format"),
+    end_date: Optional[str] = Query(None, description="End date in YYYY-MM-DD format"),
+    property_ids: Optional[str] = Query(None, description="Comma-separated property IDs"),
+    data=Depends(get_data)
+):
+    """
+    Get total revenue KPI for the selected date range and properties.
+    """
+    try:
+        # Parse property IDs if provided
+        property_id_list = None
+        if property_ids:
+            try:
+                property_id_list = [int(pid.strip()) for pid in property_ids.split(",")]
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid property_ids format")
+        
+        # Validate dates
+        if start_date:
+            try:
+                datetime.strptime(start_date, '%Y-%m-%d')
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+        
+        if end_date:
+            try:
+                datetime.strptime(end_date, '%Y-%m-%d')
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+        
+        # Filter reservations
+        reservations = data.reservations
+        if property_id_list:
+            reservations = [r for r in reservations if r.property_id in property_id_list]
+        
+        # Apply date filters (filter by check-in date)
+        filtered_reservations = []
+        for r in reservations:
+            if start_date and r.check_in < start_date:
+                continue
+            if end_date and r.check_in > end_date:
+                continue
+            filtered_reservations.append(r)
+        
+        # Calculate total revenue
+        total_revenue = sum(r.reservation_revenue for r in filtered_reservations)
+        
+        # Count unique properties
+        unique_properties = set(r.property_id for r in filtered_reservations)
+        property_count = len(unique_properties)
+        
+        return TotalRevenueResponse(
+            total_revenue=total_revenue,
+            date_range={
+                "start_date": start_date or "N/A",
+                "end_date": end_date or "N/A"
+            },
+            property_count=property_count
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting total revenue KPI: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.get("/api/kpis/stays-count", response_model=StaysCountResponse)
+async def get_stays_count_kpi(
+    start_date: Optional[str] = Query(None, description="Start date in YYYY-MM-DD format"),
+    end_date: Optional[str] = Query(None, description="End date in YYYY-MM-DD format"),
+    property_ids: Optional[str] = Query(None, description="Comma-separated property IDs"),
+    data=Depends(get_data)
+):
+    """
+    Get number of stays (reservations count) KPI for the selected date range and properties.
+    """
+    try:
+        # Parse property IDs if provided
+        property_id_list = None
+        if property_ids:
+            try:
+                property_id_list = [int(pid.strip()) for pid in property_ids.split(",")]
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid property_ids format")
+        
+        # Validate dates
+        if start_date:
+            try:
+                datetime.strptime(start_date, '%Y-%m-%d')
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+        
+        if end_date:
+            try:
+                datetime.strptime(end_date, '%Y-%m-%d')
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+        
+        # Filter reservations
+        reservations = data.reservations
+        if property_id_list:
+            reservations = [r for r in reservations if r.property_id in property_id_list]
+        
+        # Apply date filters (filter by check-in date)
+        filtered_reservations = []
+        for r in reservations:
+            if start_date and r.check_in < start_date:
+                continue
+            if end_date and r.check_in > end_date:
+                continue
+            filtered_reservations.append(r)
+        
+        # Count stays
+        total_stays = len(filtered_reservations)
+        
+        # Count unique properties
+        unique_properties = set(r.property_id for r in filtered_reservations)
+        property_count = len(unique_properties)
+        
+        return StaysCountResponse(
+            total_stays=total_stays,
+            date_range={
+                "start_date": start_date or "N/A",
+                "end_date": end_date or "N/A"
+            },
+            property_count=property_count
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting stays count KPI: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.get("/api/kpis/average-nightly-revenue", response_model=AverageNightlyRevenueResponse)
+async def get_average_nightly_revenue_kpi(
+    start_date: Optional[str] = Query(None, description="Start date in YYYY-MM-DD format"),
+    end_date: Optional[str] = Query(None, description="End date in YYYY-MM-DD format"),
+    property_ids: Optional[str] = Query(None, description="Comma-separated property IDs"),
+    data=Depends(get_data)
+):
+    """
+    Get average nightly revenue KPI using prorated calculation method.
+    """
+    try:
+        # Parse property IDs if provided
+        property_id_list = None
+        if property_ids:
+            try:
+                property_id_list = [int(pid.strip()) for pid in property_ids.split(",")]
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid property_ids format")
+        
+        # Validate dates
+        if start_date:
+            try:
+                datetime.strptime(start_date, '%Y-%m-%d')
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+        
+        if end_date:
+            try:
+                datetime.strptime(end_date, '%Y-%m-%d')
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+        
+        # Filter reservations
+        reservations = data.reservations
+        if property_id_list:
+            reservations = [r for r in reservations if r.property_id in property_id_list]
+        
+        # Apply date filters (filter by check-in date)
+        filtered_reservations = []
+        for r in reservations:
+            if start_date and r.check_in < start_date:
+                continue
+            if end_date and r.check_in > end_date:
+                continue
+            filtered_reservations.append(r)
+        
+        # Calculate metrics using prorated method
+        from .services.revenue_calculator import calculate_reservation_metrics
+        metrics = calculate_reservation_metrics(filtered_reservations)
+        
+        return AverageNightlyRevenueResponse(
+            average_nightly_revenue=metrics['average_nightly_rate'],
+            total_nights=metrics['total_nights'],
+            total_revenue=metrics['total_revenue'],
+            date_range={
+                "start_date": start_date or "N/A",
+                "end_date": end_date or "N/A"
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting average nightly revenue KPI: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
