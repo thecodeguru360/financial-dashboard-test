@@ -21,53 +21,91 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   placeholder = "Pick a date range",
   className,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const [endDateOpen, setEndDateOpen] = useState(false);
 
-  const formatDateRange = (range: DateRange | undefined) => {
-    if (!range) return placeholder;
-    
-    if (range.from) {
-      if (range.to) {
-        return `${format(range.from, 'MMM dd, yyyy')} - ${format(range.to, 'MMM dd, yyyy')}`;
-      }
-      return format(range.from, 'MMM dd, yyyy');
-    }
-    
-    return placeholder;
+  const formatDate = (date: Date | undefined) => {
+    return date ? format(date, 'MMM dd, yyyy') : 'Select date';
   };
 
-  const handleSelect = (range: DateRange | undefined) => {
-    onChange(range);
-    // Close popover when both dates are selected
-    if (range?.from && range?.to) {
-      setIsOpen(false);
+  const handleStartDateSelect = (date: Date | undefined) => {
+    if (date) {
+      const newRange: DateRange = {
+        from: date,
+        to: value?.to || new Date() // Set end date to today if not already selected
+      };
+      onChange(newRange);
     }
+    setStartDateOpen(false);
+  };
+
+  const handleEndDateSelect = (date: Date | undefined) => {
+    if (date) {
+      const newRange: DateRange = {
+        from: value?.from,
+        to: date
+      };
+      onChange(newRange);
+    }
+    setEndDateOpen(false);
   };
 
   return (
-    <div className={cn("grid gap-2", className)}>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <div className={cn("flex items-center gap-2", className)}>
+      {/* Start Date Picker */}
+      <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
         <PopoverTrigger asChild>
           <Button
-            id="date"
             variant="outline"
             className={cn(
-              "w-full justify-start text-left font-normal",
-              !value && "text-muted-foreground"
+              "justify-start text-left font-normal flex-1",
+              !value?.from && "text-muted-foreground"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {formatDateRange(value)}
+            {formatDate(value?.from)}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={value?.from}
-            selected={value}
-            onSelect={handleSelect}
-            numberOfMonths={2}
+            mode="single"
+            selected={value?.from}
+            onSelect={handleStartDateSelect}
+            disabled={(date) => {
+              const today = new Date();
+              today.setHours(23, 59, 59, 999); // End of today
+              return date > today || (value?.to ? date > value.to : false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+
+      <span className="text-muted-foreground">to</span>
+
+      {/* End Date Picker */}
+      <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "justify-start text-left font-normal flex-1",
+              !value?.to && "text-muted-foreground"
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {formatDate(value?.to)}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={value?.to}
+            onSelect={handleEndDateSelect}
+            disabled={(date) => {
+              const today = new Date();
+              today.setHours(23, 59, 59, 999); // End of today
+              return date > today || (value?.from ? date < value.from : false);
+            }}
           />
         </PopoverContent>
       </Popover>

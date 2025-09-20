@@ -53,7 +53,7 @@ export const HeaderFilterControls: React.FC<HeaderFilterControlsProps> = ({ clas
         value={dateRange}
         onChange={handleDateRangeChange}
         placeholder="Select date range"
-        className="w-32 sm:w-40 lg:w-48"
+        className=""
       />
 
       {/* Property Filter */}
