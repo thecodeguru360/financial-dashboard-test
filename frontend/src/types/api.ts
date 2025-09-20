@@ -6,6 +6,11 @@ export interface Property {
   average_review_score: number;
 }
 
+export interface PropertiesResponse {
+  data: Property[];
+  total_count: number;
+}
+
 // Revenue types
 export interface RevenuePoint {
   date: string;

@@ -3,6 +3,7 @@ import { apiRequest, API_ENDPOINTS } from '../lib/api';
 import { useApiErrorHandler } from './useErrorHandler';
 import {
   Property,
+  PropertiesResponse,
   RevenueTimeline,
   PropertyRevenue,
   LostIncomeData,
@@ -80,7 +81,8 @@ export const useProperties = (): UseQueryResult<Property[], Error> => {
     queryKey: QUERY_KEYS.PROPERTIES,
     queryFn: async () => {
       try {
-        return await apiRequest<Property[]>(API_ENDPOINTS.PROPERTIES);
+        const response = await apiRequest<PropertiesResponse>(API_ENDPOINTS.PROPERTIES);
+        return response.data;
       } catch (error) {
         handleQueryError(error as Error, QUERY_KEYS.PROPERTIES);
         throw error;
