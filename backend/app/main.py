@@ -5,9 +5,9 @@ from datetime import datetime
 import logging
 
 from .models import (
-    FilterRequest, RevenueTimelineResponse, PropertyRevenueResponse, 
+    FilterRequest, PropertyRevenueResponse, 
     PropertiesResponse, ErrorResponse, ValidationErrorResponse,
-    RevenuePoint, PropertyRevenue, Property, LostIncomeResponse,
+    PropertyRevenue, Property, LostIncomeResponse,
     LostIncomeData, ReviewTrendsResponse, ReviewTrend, LeadTimeResponse,
     LeadTimeStats
 )
@@ -80,7 +80,7 @@ async def get_properties(data=Depends(get_data)):
         logger.error(f"Error getting properties: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.get("/api/revenue/timeline", response_model=RevenueTimelineResponse)
+@app.get("/api/revenue/timeline")
 async def get_revenue_timeline(
     start_date: Optional[str] = Query(None, description="Start date in YYYY-MM-DD format"),
     end_date: Optional[str] = Query(None, description="End date in YYYY-MM-DD format"),
@@ -120,25 +120,32 @@ async def get_revenue_timeline(
         # Create revenue timeline
         timeline_data = create_revenue_timeline(reservations, start_date, end_date)
         
-        # Convert to response format
-        revenue_points = [
-            RevenuePoint(date=item['date'], revenue=item['total_revenue'])
-            for item in timeline_data
-        ]
+        # Convert to response format - match frontend RevenueTimeline interface
+        timeline_points = []
+        for item in timeline_data:
+            point = {
+                'date': item['date'],
+                'total_revenue': item['total_revenue']
+            }
+            # Add property breakdown if property filtering is applied
+            if property_id_list and len(property_id_list) == 1:
+                point['property_breakdown'] = {property_id_list[0]: item['total_revenue']}
+            timeline_points.append(point)
         
         # Calculate totals and date range
-        total_revenue = sum(point.revenue for point in revenue_points)
-        actual_start = min(point.date for point in revenue_points) if revenue_points else start_date
-        actual_end = max(point.date for point in revenue_points) if revenue_points else end_date
+        total_revenue = sum(point['total_revenue'] for point in timeline_points)
+        actual_start = min(point['date'] for point in timeline_points) if timeline_points else start_date
+        actual_end = max(point['date'] for point in timeline_points) if timeline_points else end_date
         
-        return RevenueTimelineResponse(
-            data=revenue_points,
-            total_revenue=total_revenue,
-            date_range={
+        # Return in the format expected by frontend RevenueTimeline interface
+        return {
+            "data": timeline_points,
+            "total_revenue": total_revenue,
+            "date_range": {
                 "start_date": actual_start or "N/A",
                 "end_date": actual_end or "N/A"
             }
-        )
+        }
         
     except RevenueCalculationError as e:
         logger.error(f"Revenue calculation error: {e}")
