@@ -1,0 +1,23 @@
+{
+  "name": "financial-dashboard",
+  "version": "1.0.0",
+  "description": "Interactive financial dashboard for short-term rental portfolio management",
+  "scripts": {
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "frontend": "cd frontend && npm start",
+    "install-all": "cd backend && pip install -r requirements.txt && cd ../frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "dashboard",
+    "analytics",
+    "fastapi",
+    "react",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT"
+}
