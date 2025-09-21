@@ -70,6 +70,23 @@ export interface LeadTimeData {
   }>;
 }
 
+// KPI types
+export interface KPIData {
+  name: string;
+  value: number;
+  unit: string;
+  description: string;
+}
+
+export interface KPIResponse {
+  data: KPIData[];
+  date_range: {
+    start_date: string;
+    end_date: string;
+  };
+  property_filter?: number[] | null;
+}
+
 // Filter types
 export interface DateRange {
   start_date?: string;

@@ -7,6 +7,7 @@ import { NetworkStatus } from './components/ui/NetworkStatus';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { DashboardSection } from './components/layout/DashboardSection';
 import { RevenueTimelineChart, RevenueByPropertyChart, LostIncomeChart, ReviewTrendsChart, LeadTimeChart } from './components/charts';
+import { KPIDashboard } from './components/kpis';
 import { setupGlobalErrorHandling } from './lib/errorReporting';
 
 function App() {
@@ -22,6 +23,15 @@ function App() {
           <ErrorBoundary>
             <NetworkStatus />
             <DashboardLayout>
+              {/* Key Performance Indicators Section */}
+              <DashboardSection
+                id="kpis"
+                title="Key Performance Indicators"
+                description="Overview of your portfolio's key metrics and financial performance"
+              >
+                <KPIDashboard />
+              </DashboardSection>
+
               {/* Revenue Analytics Section */}
               <DashboardSection
                 id="revenue"
