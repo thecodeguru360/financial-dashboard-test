@@ -60,6 +60,7 @@ export interface LeadTimeStats {
   median_days: number;
   p90_days: number;
   distribution: number[]; // histogram bins
+  total_bookings: number;
 }
 
 export interface LeadTimeData {

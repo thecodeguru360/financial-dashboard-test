@@ -82,23 +82,31 @@ const LeadTimeStatsTable: React.FC<{ stats: LeadTimeData['stats'] | undefined }>
   if (!stats) return null;
   
   return (
-    <div className="mb-4">
-      <h4 className="text-sm font-medium text-foreground mb-2">Lead Time Statistics</h4>
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div className="bg-muted/50 rounded-lg p-3 text-center">
+    <div className="bg-muted/30 rounded-lg p-4">
+      <h4 className="text-sm font-medium text-foreground mb-3">Key Metrics</h4>
+      <div className="space-y-3">
+        <div className="text-center">
           <div className="text-2xl font-bold text-primary">
             {formatNumber(stats.median_days)}
           </div>
-          <div className="text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             Median Days
           </div>
         </div>
-        <div className="bg-muted/50 rounded-lg p-3 text-center">
+        <div className="text-center">
           <div className="text-2xl font-bold text-secondary">
             {formatNumber(stats.p90_days)}
           </div>
-          <div className="text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             90th Percentile
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-semibold text-foreground">
+            {formatNumber(stats.total_bookings)}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Total Bookings
           </div>
         </div>
       </div>
@@ -147,105 +155,122 @@ export const LeadTimeChart: React.FC<LeadTimeChartProps> = ({
       }}
     >
       {() => (
-        <div className="w-full h-[450px]" role="img" aria-label="Lead time distribution histogram showing booking patterns">
+        <div className="w-full" role="img" aria-label="Lead time distribution histogram showing booking patterns">
           {hasData && query.data ? (
-            <>
-              {/* Statistics Table */}
-              <LeadTimeStatsTable stats={query.data?.stats} />
-              
-              {/* Summary Stats */}
-              {summaryStats && (
-                <div className="mb-4 text-center">
-                  <div className="flex justify-center gap-6 text-sm text-muted-foreground">
-                    <span>
-                      Total Bookings: <span className="font-semibold text-primary">
-                        {formatNumber(summaryStats.totalBookings)}
-                      </span>
-                    </span>
-                    <span>
-                      Average Lead Time: <span className="font-semibold text-secondary">
-                        {summaryStats.avgLeadTime.toFixed(1)} days
-                      </span>
-                    </span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[450px]">
+              {/* Left Column - Booking Lead Stats */}
+              <div className="lg:col-span-1 space-y-4">
+                {/* Statistics Table */}
+                <LeadTimeStatsTable stats={query.data?.stats} />
+                
+                {/* Summary Stats */}
+                {summaryStats && (
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-foreground mb-3">Summary</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Total Bookings:</span>
+                        <span className="font-semibold text-primary">
+                          {formatNumber(summaryStats.totalBookings)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Average Lead Time:</span>
+                        <span className="font-semibold text-secondary">
+                          {summaryStats.avgLeadTime.toFixed(1)} days
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+
+              </div>
+
+              {/* Right Column - Histogram Chart (Wider) */}
+              <div className="lg:col-span-2 h-full">
+
+                                {/* Legend */}
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-foreground mb-3">Categories</h4>
+                 
+                  <div className="flex gap-4 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(var(--destructive))' }}></div>
+                      <span className="text-muted-foreground">≤ 7 days (Last minute)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(var(--warning))' }}></div>
+                      <span className="text-muted-foreground">8-30 days (Short term)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(var(--primary))' }}></div>
+                      <span className="text-muted-foreground">&gt; 30 days (Long term)</span>
+                    </div>
+                  
                   </div>
                 </div>
-              )}
 
-              {/* Legend */}
-              <div className="mb-3 flex justify-center gap-4 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(var(--destructive))' }}></div>
-                  <span className="text-muted-foreground">≤ 7 days (Last minute)</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(var(--warning))' }}></div>
-                  <span className="text-muted-foreground">8-30 days (Short term)</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(var(--primary))' }}></div>
-                  <span className="text-muted-foreground">&gt; 30 days (Long term)</span>
-                </div>
-              </div>
-              
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{
-                    top: 20,
-                    right: 30,
-                    left: 20,
-                    bottom: 60,
-                  }}
-                >
-                  <CartesianGrid 
-                    strokeDasharray="3 3" 
-                    stroke="#F1F1F1"
-                  />
-                  <XAxis
-                    dataKey="lead_time_days"
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
-                    axisLine={{ stroke: '#F1F1F1' }}
-                    tickLine={{ stroke: '#F1F1F1' }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                    tickFormatter={formatDaysTick}
-                    label={{ 
-                      value: 'Lead Time (Days)', 
-                      position: 'insideBottom', 
-                      offset: -10,
-                      style: { textAnchor: 'middle', fill: '#6B7280' }
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={chartData}
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 20,
+                      bottom: 60,
                     }}
-                  />
-                  <YAxis
-                    tickFormatter={formatCountTick}
-                    tick={{ fontSize: 12, fill: '#6B7280' }}
-                    axisLine={{ stroke: '#F1F1F1' }}
-                    tickLine={{ stroke: '#F1F1F1' }}
-                    label={{ 
-                      value: 'Number of Bookings', 
-                      angle: -90, 
-                      position: 'insideLeft',
-                      style: { textAnchor: 'middle', fill: '#6B7280' }
-                    }}
-                  />
-                  <Tooltip 
-                    content={<CustomTooltip />}
-                    cursor={{ fill: '#F5F5F5', opacity: 0.5 }}
-                  />
-                  <Bar
-                    dataKey="count"
-                    radius={[2, 2, 0, 0]}
                   >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </>
+                    <CartesianGrid 
+                      strokeDasharray="3 3" 
+                      stroke="#F1F1F1"
+                    />
+                    <XAxis
+                      dataKey="lead_time_days"
+                      tick={{ fontSize: 11, fill: '#6B7280' }}
+                      axisLine={{ stroke: '#F1F1F1' }}
+                      tickLine={{ stroke: '#F1F1F1' }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                      tickFormatter={formatDaysTick}
+                      label={{ 
+                        value: 'Lead Time (Days)', 
+                        position: 'insideBottom', 
+                        offset: -10,
+                        style: { textAnchor: 'middle', fill: '#6B7280' }
+                      }}
+                    />
+                    <YAxis
+                      tickFormatter={formatCountTick}
+                      tick={{ fontSize: 12, fill: '#6B7280' }}
+                      axisLine={{ stroke: '#F1F1F1' }}
+                      tickLine={{ stroke: '#F1F1F1' }}
+                      label={{ 
+                        value: 'Number of Bookings', 
+                        angle: -90, 
+                        position: 'insideLeft',
+                        style: { textAnchor: 'middle', fill: '#6B7280' }
+                      }}
+                    />
+                    <Tooltip 
+                      content={<CustomTooltip />}
+                      cursor={{ fill: '#F5F5F5', opacity: 0.5 }}
+                    />
+                    <Bar
+                      dataKey="count"
+                      radius={[2, 2, 0, 0]}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           ) : (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex items-center justify-center h-[450px]">
               <div className="text-center">
                 <p className="text-muted-foreground">No lead time data available</p>
                 <p className="text-sm text-muted-foreground mt-1">
