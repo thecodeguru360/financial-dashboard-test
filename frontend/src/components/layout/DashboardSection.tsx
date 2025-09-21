@@ -17,11 +17,11 @@ export function DashboardSection({
   className 
 }: DashboardSectionProps) {
   return (
-    <section id={id} className={cn('space-y-6', className)}>
+    <section id={id} className={cn('space-y-4', className)}>
       <div className="space-y-2">
-        <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
         {description && (
-          <p className="text-gray-600 text-lg">{description}</p>
+          <p className="text-gray-600 text-md">{description}</p>
         )}
       </div>
       <div className="grid gap-6">

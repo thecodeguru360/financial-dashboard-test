@@ -38,7 +38,7 @@ function App() {
                 title="Revenue Analytics"
                 description="Track financial performance and identify revenue trends across your portfolio"
               >
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6">
                   <RevenueTimelineChart />
                   <RevenueByPropertyChart />
                 </div>
