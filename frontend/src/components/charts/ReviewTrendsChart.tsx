@@ -22,10 +22,10 @@ interface ReviewTrendsChartProps {
 }
 
 // Custom tooltip component for better accessibility and formatting
-const CustomTooltip = ({ 
-  active, 
-  payload, 
-  label 
+const CustomTooltip = ({
+  active,
+  payload,
+  label
 }: any) => {
   if (!active || !payload || !payload.length) {
     return null;
@@ -45,7 +45,7 @@ const CustomTooltip = ({
           </span>
         </p>
         <p className="text-gray-600">
-          Review Count: <span className="font-medium text-gray-700">
+          Review Count: <span className="font-medium text-black-700">
             {reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}
           </span>
         </p>
@@ -97,8 +97,8 @@ const formatCountTick = (value: number) => {
   return value.toString();
 };
 
-export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({ 
-  className 
+export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({
+  className
 }) => {
   const { filters } = useFilters();
   const query = useReviewTrends(filters);
@@ -109,16 +109,16 @@ export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({
   }, [query.data]);
 
   const hasData = chartData.length > 0;
-  
+
   // Calculate summary statistics
   const summaryStats = useMemo(() => {
     if (!hasData) return null;
-    
+
     const totalReviews = chartData.reduce((sum, item) => sum + item.review_count, 0);
     const avgRating = chartData.reduce((sum, item, _, arr) => {
       return sum + (item.avg_rating * item.review_count) / totalReviews;
     }, 0);
-    
+
     return {
       totalReviews,
       avgRating: totalReviews > 0 ? avgRating : 0,
@@ -146,7 +146,7 @@ export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({
                 <div className="mb-4 text-center">
                   <div className="flex justify-center gap-6 text-sm text-muted-foreground">
                     <span>
-                      Total Reviews: <span className="font-semibold text-secondary">
+                      Total Reviews: <span className="font-semibold text-gray-700">
                         {formatNumber(summaryStats.totalReviews)}
                       </span>
                     </span>
@@ -168,8 +168,8 @@ export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({
                     bottom: 20,
                   }}
                 >
-                  <CartesianGrid 
-                    strokeDasharray="3 3" 
+                  <CartesianGrid
+                    strokeDasharray="3 3"
                     stroke="#F1F1F1"
                   />
                   <XAxis
@@ -191,9 +191,9 @@ export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({
                     tick={{ fontSize: 12, fill: '#6B7280' }}
                     axisLine={{ stroke: '#F1F1F1' }}
                     tickLine={{ stroke: '#F1F1F1' }}
-                    label={{ 
-                      value: 'Average Rating', 
-                      angle: -90, 
+                    label={{
+                      value: 'Average Rating',
+                      angle: -90,
                       position: 'insideLeft',
                       style: { textAnchor: 'middle', fill: '#6B7280' }
                     }}
@@ -206,18 +206,18 @@ export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({
                     tick={{ fontSize: 12, fill: '#6B7280' }}
                     axisLine={{ stroke: '#F1F1F1' }}
                     tickLine={{ stroke: '#F1F1F1' }}
-                    label={{ 
-                      value: 'Review Count', 
-                      angle: 90, 
+                    label={{
+                      value: 'Review Count',
+                      angle: 90,
                       position: 'insideRight',
                       style: { textAnchor: 'middle', fill: '#6B7280' }
                     }}
                   />
-                  <Tooltip 
+                  <Tooltip
                     content={<CustomTooltip />}
                     cursor={{ fill: '#F5F5F5', opacity: 0.5 }}
                   />
-                  <Legend 
+                  <Legend
                     wrapperStyle={{ paddingTop: '20px', color: '#6B7280' }}
                     iconType="rect"
                   />
@@ -226,7 +226,7 @@ export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({
                     yAxisId="count"
                     dataKey="review_count"
                     name="Review Count"
-                    fill="#F5F5F5"
+                    fill="#444444"
                     fillOpacity={0.8}
                     radius={[2, 2, 0, 0]}
                   />
@@ -238,13 +238,13 @@ export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({
                     name="Average Rating"
                     stroke="#459B63"
                     strokeWidth={3}
-                    dot={{ 
-                      fill: '#459B63', 
-                      strokeWidth: 2, 
-                      r: 5 
+                    dot={{
+                      fill: '#459B63',
+                      strokeWidth: 2,
+                      r: 5
                     }}
-                    activeDot={{ 
-                      r: 7, 
+                    activeDot={{
+                      r: 7,
                       stroke: '#459B63',
                       strokeWidth: 2,
                       fill: '#FAFAFA'
@@ -264,7 +264,7 @@ export const ReviewTrendsChart: React.FC<ReviewTrendsChartProps> = ({
               </div>
             </div>
           )}
-          
+
           {/* Screen reader accessible data table */}
           <div className="sr-only">
             <table>

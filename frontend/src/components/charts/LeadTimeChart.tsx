@@ -33,7 +33,7 @@ const CustomTooltip = ({
   const count = payload[0]?.value || 0;
 
   return (
-    <div className="bg-white border border-[#F1F1F1] rounded-xl p-3 shadow-lg">
+    <div className="bg-white border border-[#F1F1F1] rounded-xl p-3 shadow-lg ">
       <p className="font-medium text-gray-900">
         {leadTimeDays} {leadTimeDays === 1 ? 'day' : 'days'} lead time
       </p>
@@ -86,7 +86,7 @@ const LeadTimeStatsTable: React.FC<{ stats: LeadTimeData['stats'] | undefined }>
       <h4 className="text-sm font-medium text-foreground mb-3">Key Metrics</h4>
       <div className="space-y-3">
         <div className="text-center">
-          <div className="text-2xl font-bold text-primary">
+          <div className="text-2xl font-bold text-gray-700">
             {formatNumber(stats.median_days)}
           </div>
           <div className="text-xs text-muted-foreground">
@@ -94,7 +94,7 @@ const LeadTimeStatsTable: React.FC<{ stats: LeadTimeData['stats'] | undefined }>
           </div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-secondary">
+          <div className="text-2xl font-bold text-gray-700">
             {formatNumber(stats.p90_days)}
           </div>
           <div className="text-xs text-muted-foreground">
@@ -102,7 +102,7 @@ const LeadTimeStatsTable: React.FC<{ stats: LeadTimeData['stats'] | undefined }>
           </div>
         </div>
         <div className="text-center">
-          <div className="text-lg font-semibold text-foreground">
+          <div className="text-lg font-semibold text-gray-700">
             {formatNumber(stats.total_bookings)}
           </div>
           <div className="text-xs text-muted-foreground">
@@ -155,7 +155,7 @@ export const LeadTimeChart: React.FC<LeadTimeChartProps> = ({
       }}
     >
       {() => (
-        <div className="w-full" role="img" aria-label="Lead time distribution histogram showing booking patterns">
+        <div className="w-full min-h-[500px]" role="img" aria-label="Lead time distribution histogram showing booking patterns">
           {hasData && query.data ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[450px]">
               {/* Left Column - Booking Lead Stats */}
@@ -176,7 +176,7 @@ export const LeadTimeChart: React.FC<LeadTimeChartProps> = ({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Average Lead Time:</span>
-                        <span className="font-semibold text-secondary">
+                        <span className="font-semibold text-gray-700">
                           {summaryStats.avgLeadTime.toFixed(1)} days
                         </span>
                       </div>

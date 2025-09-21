@@ -127,18 +127,14 @@ export const RevenueTimelineChart: React.FC<RevenueTimelineChartProps> = ({
                 />
                 <Tooltip 
                   content={<CustomTooltip />}
-                  cursor={{ stroke: '#459B63', strokeWidth: 1 }}
+                  cursor={{ stroke: '#459B63', strokeWidth: 2 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="revenue"
                   stroke="#459B63"
-                  strokeWidth={3}
-                  dot={{ 
-                    fill: '#459B63', 
-                    strokeWidth: 2, 
-                    r: 4 
-                  }}
+                  strokeWidth={1}
+                  dot={false}
                   activeDot={{ 
                     r: 6, 
                     stroke: '#459B63',
