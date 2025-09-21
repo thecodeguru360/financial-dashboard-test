@@ -68,6 +68,7 @@ class LeadTimeStats(BaseModel):
 class LeadTimeResponse(BaseModel):
     """Response model for lead time analysis endpoint"""
     stats: LeadTimeStats
+    data: List[Dict[str, int]] = Field(description="Histogram data with lead_time_days and count")
     date_range: Dict[str, str] = Field(description="Date range of analyzed bookings")
 
 class ReviewTrend(BaseModel):

@@ -411,6 +411,14 @@ async def get_booking_lead_times(
         # Extract histogram counts for the distribution array
         distribution = [item['count'] for item in histogram_data]
         
+        # Format histogram data for frontend (convert bin_start to lead_time_days)
+        formatted_histogram = []
+        for item in histogram_data:
+            formatted_histogram.append({
+                'lead_time_days': item['bin_start'],
+                'count': item['count']
+            })
+        
         # Create response
         lead_time_stats = LeadTimeStats(
             median_days=stats_data['median_days'],
@@ -425,6 +433,7 @@ async def get_booking_lead_times(
         
         return LeadTimeResponse(
             stats=lead_time_stats,
+            data=formatted_histogram,
             date_range={
                 "start_date": actual_start,
                 "end_date": actual_end
