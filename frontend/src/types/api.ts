@@ -6,6 +6,11 @@ export interface Property {
   average_review_score: number;
 }
 
+export interface PropertiesResponse {
+  data: Property[];
+  total_count: number;
+}
+
 // Revenue types
 export interface RevenuePoint {
   date: string;
@@ -55,6 +60,7 @@ export interface LeadTimeStats {
   median_days: number;
   p90_days: number;
   distribution: number[]; // histogram bins
+  total_bookings: number;
 }
 
 export interface LeadTimeData {
@@ -63,6 +69,23 @@ export interface LeadTimeData {
     lead_time_days: number;
     count: number;
   }>;
+}
+
+// KPI types
+export interface KPIData {
+  name: string;
+  value: number;
+  unit: string;
+  description: string;
+}
+
+export interface KPIResponse {
+  data: KPIData[];
+  date_range: {
+    start_date: string;
+    end_date: string;
+  };
+  property_filter?: number[] | null;
 }
 
 // Filter types

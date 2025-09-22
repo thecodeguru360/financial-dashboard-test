@@ -47,13 +47,13 @@ export const HeaderFilterControls: React.FC<HeaderFilterControlsProps> = ({ clas
   );
 
   return (
-    <div className={`flex items-center space-x-3 ${className || ''}`}>
+    <div className={`flex items-center gap-2 lg:gap-4 ${className || ''}`}>
       {/* Date Range Filter */}
       <DateRangePicker
         value={dateRange}
         onChange={handleDateRangeChange}
         placeholder="Select date range"
-        className="w-48"
+        className=""
       />
 
       {/* Property Filter */}
@@ -62,7 +62,7 @@ export const HeaderFilterControls: React.FC<HeaderFilterControlsProps> = ({ clas
         selectedIds={filters.property_ids || []}
         onChange={handlePropertyChange}
         placeholder="All properties"
-        className="w-48"
+        className="w-32 sm:w-40 lg:w-48"
         isLoading={isLoadingProperties}
       />
 
@@ -72,7 +72,7 @@ export const HeaderFilterControls: React.FC<HeaderFilterControlsProps> = ({ clas
           variant="outline"
           size="sm"
           onClick={resetFilters}
-          className="h-9 px-3"
+          className="h-9 px-2 lg:px-3 flex-shrink-0"
           title="Reset all filters"
         >
           <RotateCcw className="h-4 w-4" />

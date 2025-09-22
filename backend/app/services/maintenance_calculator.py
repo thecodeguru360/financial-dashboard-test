@@ -3,6 +3,7 @@ Maintenance impact calculation module for financial dashboard.
 
 This module provides functions for calculating lost income due to maintenance blocks
 by analyzing historical average daily rates per property.
+Enhanced with caching for improved performance.
 """
 
 import logging
@@ -20,6 +21,7 @@ from .revenue_calculator import (
     validate_reservation_data,
     RevenueCalculationError
 )
+from .cache_manager import cached_aggregation, cached_query
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -315,6 +317,7 @@ def calculate_lost_income_by_property(reservations: List, maintenance_blocks: Li
         raise MaintenanceCalculationError(f"Error calculating lost income by property: {e}")
 
 
+@cached_query("lost_income_summary")
 def create_lost_income_summary(reservations: List, maintenance_blocks: List,
                              start_date: Optional[str] = None,
                              end_date: Optional[str] = None) -> List[Dict[str, any]]:

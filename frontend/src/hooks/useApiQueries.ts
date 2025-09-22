@@ -3,11 +3,13 @@ import { apiRequest, API_ENDPOINTS } from '../lib/api';
 import { useApiErrorHandler } from './useErrorHandler';
 import {
   Property,
+  PropertiesResponse,
   RevenueTimeline,
   PropertyRevenue,
   LostIncomeData,
   ReviewTrendsData,
   LeadTimeData,
+  KPIResponse,
   ApiFilters,
 } from '../types/api';
 
@@ -19,6 +21,7 @@ export const QUERY_KEYS = {
   MAINTENANCE_LOST_INCOME: ['maintenance', 'lost-income'],
   REVIEW_TRENDS: ['reviews', 'trends'],
   LEAD_TIMES: ['bookings', 'lead-times'],
+  KPIS: ['kpis'],
 } as const;
 
 // Enhanced retry function with better error handling
@@ -80,7 +83,8 @@ export const useProperties = (): UseQueryResult<Property[], Error> => {
     queryKey: QUERY_KEYS.PROPERTIES,
     queryFn: async () => {
       try {
-        return await apiRequest<Property[]>(API_ENDPOINTS.PROPERTIES);
+        const response = await apiRequest<PropertiesResponse>(API_ENDPOINTS.PROPERTIES);
+        return response.data;
       } catch (error) {
         handleQueryError(error as Error, QUERY_KEYS.PROPERTIES);
         throw error;
@@ -208,6 +212,30 @@ export const useLeadTimes = (
     enabled: true,
     staleTime: 2 * 60 * 1000, // 2 minutes
     retry: createRetryFunction([...QUERY_KEYS.LEAD_TIMES]),
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+};
+
+// Hook for fetching KPIs
+export const useKPIs = (
+  filters: ApiFilters
+): UseQueryResult<KPIResponse, Error> => {
+  const { handleQueryError } = useApiErrorHandler();
+  const queryKey = [...QUERY_KEYS.KPIS, filters];
+  
+  return useQuery({
+    queryKey,
+    queryFn: async () => {
+      try {
+        return await apiRequest<KPIResponse>(API_ENDPOINTS.KPIS, filters);
+      } catch (error) {
+        handleQueryError(error as Error, [...QUERY_KEYS.KPIS], filters);
+        throw error;
+      }
+    },
+    enabled: true,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: createRetryFunction([...QUERY_KEYS.KPIS]),
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };

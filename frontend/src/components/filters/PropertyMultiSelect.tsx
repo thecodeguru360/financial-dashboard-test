@@ -101,7 +101,7 @@ export const PropertyMultiSelect: React.FC<PropertyMultiSelectProps> = ({
             </div>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
+        <PopoverContent className="w-full p-0 z-[60]" align="end">
           <div className="p-3 space-y-3">
             {/* Search input */}
             <div className="relative">

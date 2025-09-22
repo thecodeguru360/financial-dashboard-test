@@ -3,6 +3,7 @@ Revenue calculation and aggregation module for financial dashboard.
 
 This module provides functions for calculating nightly rates, prorating revenue
 across stay dates, and aggregating revenue data for analytics.
+Enhanced with caching for improved performance.
 """
 
 import logging
@@ -16,6 +17,7 @@ from .date_utils import (
     generate_date_range,
     DateValidationError
 )
+from .cache_manager import cached_aggregation, cached_query
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -225,6 +227,7 @@ def calculate_reservation_metrics(reservations: List) -> Dict[str, float]:
     }
 
 
+@cached_aggregation("daily_revenue")
 def aggregate_daily_revenue(reservations: List, start_date: Optional[str] = None, 
                           end_date: Optional[str] = None) -> Dict[str, float]:
     """
@@ -285,6 +288,7 @@ def aggregate_daily_revenue(reservations: List, start_date: Optional[str] = None
     return dict(daily_totals)
 
 
+@cached_aggregation("property_revenue")
 def aggregate_revenue_by_property(reservations: List, start_date: Optional[str] = None,
                                 end_date: Optional[str] = None) -> Dict[int, Dict[str, float]]:
     """
@@ -407,6 +411,7 @@ def aggregate_daily_revenue_by_property(reservations: List, start_date: Optional
     return result
 
 
+@cached_query("revenue_timeline")
 def create_revenue_timeline(reservations: List, start_date: Optional[str] = None,
                           end_date: Optional[str] = None) -> List[Dict[str, any]]:
     """
@@ -434,6 +439,7 @@ def create_revenue_timeline(reservations: List, start_date: Optional[str] = None
     return timeline
 
 
+@cached_query("property_revenue_summary")
 def create_property_revenue_summary(reservations: List, start_date: Optional[str] = None,
                                   end_date: Optional[str] = None) -> List[Dict[str, any]]:
     """
