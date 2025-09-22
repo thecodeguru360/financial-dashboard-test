@@ -68,6 +68,9 @@ financial-dashboard/
 
    Or install manually:
    ```bash
+   # Install dev dependencies
+   npm install
+   
    # Backend dependencies
    cd backend
    pip install -r requirements.txt
