@@ -3,6 +3,7 @@ Data loading and validation module for financial dashboard.
 
 This module handles loading and validating the JSON data file containing
 properties, reservations, reviews, and maintenance blocks.
+Enhanced with caching for improved performance.
 """
 
 import json
@@ -11,6 +12,8 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from pydantic import BaseModel, ValidationError, validator
 from datetime import datetime
+
+from .cache_manager import cache_manager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -248,11 +251,9 @@ def validate_data_structure(raw_data: Dict[str, Any]) -> RawDataStructure:
         raise DataValidationError(f"Unexpected validation error: {e}")
 
 
-def load_and_validate_data(file_path: str) -> RawDataStructure:
+def _load_and_validate_data_uncached(file_path: str) -> RawDataStructure:
     """
-    Load and validate data from JSON file.
-    
-    This is the main function that combines loading and validation.
+    Internal function to load and validate data without caching.
     
     Args:
         file_path: Path to the JSON data file
@@ -274,6 +275,26 @@ def load_and_validate_data(file_path: str) -> RawDataStructure:
     
     logger.info("Data loading and validation completed successfully")
     return validated_data
+
+
+def load_and_validate_data(file_path: str) -> RawDataStructure:
+    """
+    Load and validate data from JSON file with caching.
+    
+    This is the main function that combines loading and validation with
+    intelligent caching based on file modification times.
+    
+    Args:
+        file_path: Path to the JSON data file
+        
+    Returns:
+        Validated data structure
+        
+    Raises:
+        DataLoadingError: If file cannot be loaded
+        DataValidationError: If data validation fails
+    """
+    return cache_manager.get_data(file_path, _load_and_validate_data_uncached)
 
 
 def get_data_summary(data: RawDataStructure) -> Dict[str, Any]:
