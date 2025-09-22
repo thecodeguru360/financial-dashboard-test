@@ -43,16 +43,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+
 
 # Backend virtual environments
 .env
@@ -135,3 +126,6 @@ docker-compose.override.yml
 
 # Documentation build
 docs/_build/
+temp_auto_push.bat
+temp_interactive_push.bat
+branch_structure.json
